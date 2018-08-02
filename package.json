@@ -1,0 +1,13 @@
+{
+  "name": "MakeIT_BOT",
+  "version": "0.0.1",
+  "description": "some utilities for Discord MakeIT server",
+  "main": "main.js",
+  "author": "wh1tecat",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^11.3.2",
+    "discord.js-commando": "^0.10.0",
+    "github-api": "^3.0.0"
+  }
+}
