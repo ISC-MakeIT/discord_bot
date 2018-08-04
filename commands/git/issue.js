@@ -5,6 +5,8 @@ const commonTags = require("common-tags");
 const oneLine = commonTags.oneLine;
 const stripIndents = commonTags.stripIndents;
 
+const EmbedIssue = require("../../class/EmbedIssue");
+
 const github = new githubApi();
 
 let issueInfo;
@@ -40,15 +42,20 @@ module.exports = class GitIssueCommand extends commando.Command {
 		.then((info) => {
 			return info.data;
 		});
-		console.log(issueInfo);
 
+		let embedIssue = new EmbedIssue(issueInfo);
+
+		console.log(issueInfo);
+		console.log(embedIssue);
+		
 		const embedMessage = new RichEmbed()
 		.setTitle(issueInfo.title)
-		.setURL(issueInfo.url)
+		.setURL(issueInfo.html_url)
 		.setAuthor(issueInfo.user.login, issueInfo.user.avatar_url, issueInfo.user.url)
 		.addBlankField()
 		.setDescription(issueInfo.body)
-		.setFooter(issueInfo.state);
+		.addField("Status", issueInfo.state)
+		.setFooter(issueInfo.state, "https://cdn.rawgit.com/wh1tecat-nya/BOT_Icon/e1a14d72/issue_closed.png");
 
 		return msg.reply({embed:embedMessage})
 
