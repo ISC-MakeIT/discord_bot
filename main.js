@@ -1,7 +1,8 @@
 // import modules
+require("dotenv").config() 
 const path = require("path");
 const discord = require("discord.js-commando");
-const fastify = require("fastify");
+const fastify = require("fastify")();
 
 // init constant value
 const TOKEN = process.env.TOKEN;

@@ -8,6 +8,8 @@
   "dependencies": {
     "discord.js": "^11.3.2",
     "discord.js-commando": "^0.10.0",
+    "dotenv": "^6.0.0",
+    "fastify": "^1.9.0",
     "github-api": "^3.0.0"
   }
 }
