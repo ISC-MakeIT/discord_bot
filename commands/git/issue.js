@@ -22,7 +22,7 @@ module.exports = class GitIssueCommand extends commando.Command {
 			details: oneLine`
 				This is show at a github issues.
 			`,
-			examples: ["!issue [issueNumber]"],
+			examples: ["!issue [user]/[repository] [issueNumber]"],
 
 			args: [
 				{
