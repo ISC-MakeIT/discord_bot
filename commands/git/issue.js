@@ -26,18 +26,26 @@ module.exports = class GitIssueCommand extends commando.Command {
 
 			args: [
 				{
+					key: "repository",
+					label: "user/repository",
+					prompt: "type \"user\"/\"repository\"",
+					type: "string"
+				},
+				{
 					key: "number",
 					label: "issue number",
 					prompt: "type issue number.",
 					type: "integer",
 					infinite: false
-				}
+				},
 			]
 		});
 	}
 
 	async run(msg, args) {
-		const issue = github.getIssues("ISC-MakeIT", "f_college_sns");
+		const hubUser = args.repository.split("/")[0];
+		const hubRepository  =args.repository.split("/")[1];
+		const issue = github.getIssues(hubUser, hubRepository);
 		issueInfo = await issue.getIssue(args.number)
 		.then((info) => {
 			return info.data;
@@ -45,24 +53,21 @@ module.exports = class GitIssueCommand extends commando.Command {
 
 		let embedIssue = new EmbedIssue(issueInfo);
 
-		console.log(issueInfo);
 		console.log(embedIssue);
 		
 		const embedMessage = new RichEmbed()
-		.setTitle(issueInfo.title)
-		.setURL(issueInfo.html_url)
-		.setAuthor(issueInfo.user.login, issueInfo.user.avatar_url, issueInfo.user.url)
-		.addBlankField()
-		.setDescription(issueInfo.body)
-		.addField("Status", issueInfo.state)
-		.setFooter(issueInfo.state, "https://cdn.rawgit.com/wh1tecat-nya/BOT_Icon/e1a14d72/issue_closed.png");
+		.setAuthor(embedIssue.author.name, embedIssue.author.imgUrl, embedIssue.author.url)
+		.setTitle(embedIssue.title)
+		.setURL(embedIssue.url)
+		.addField("Description", embedIssue.body)
+		.setFooter(embedIssue.state, embedIssue.stateIcon)
+		.setColor(embedIssue.stateColor)
+		.setTimestamp();
 
+		if (embedIssue.hasbodyImg) {
+			embedMessage.setImage(embedIssue.imgBody);
+		}
+		
 		return msg.reply({embed:embedMessage})
-
-		// return msg.reply(stripIndents`\`\`\`
-		// ${issueInfo.title}: ${issueInfo.state}
-		// ----------------------------------------
-		// ${issueInfo.body}
-		// \`\`\``);
 	}
 };
