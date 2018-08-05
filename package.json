@@ -5,6 +5,9 @@
   "main": "main.js",
   "author": "wh1tecat",
   "license": "MIT",
+  "scripts": {
+    "start": "node main.js"
+  },
   "dependencies": {
     "discord.js": "^11.3.2",
     "discord.js-commando": "^0.10.0",
