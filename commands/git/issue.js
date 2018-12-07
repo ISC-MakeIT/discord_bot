@@ -22,18 +22,24 @@ module.exports = class GitIssueCommand extends commando.Command {
 			details: oneLine`
 				This is show at a github issues.
 			`,
-			examples: ["!issue [user]/[repository] [issueNumber]"],
+			examples: [
+				"!issue [(MakeIT)repository] [issueNumber]", 
+				"!issue [user]/[repository] [issueNumber]", 
+				"!issue [issue URL]", 
+				"!issue [repostory URL] [issueNumber]"
+			],
 
 			args: [
 				{
 					key: "repository",
-					label: "user/repository",
-					prompt: "type \"user\"/\"repository\"",
+					label: "user/repository/URL",
+					prompt: "type \"repository\" or \"user\"/\"repository\" or (repository | issue) URL",
 					type: "string"
 				},
 				{
 					key: "number",
 					label: "issue number",
+					default: "NOTHING_NUMBER",
 					prompt: "type issue number.",
 					type: "integer",
 					infinite: false
@@ -43,31 +49,53 @@ module.exports = class GitIssueCommand extends commando.Command {
 	}
 
 	async run(msg, args) {
-		const hubUser = args.repository.split("/")[0];
-		const hubRepository  =args.repository.split("/")[1];
-		const issue = github.getIssues(hubUser, hubRepository);
-		issueInfo = await issue.getIssue(args.number)
-		.then((info) => {
-			return info.data;
-		});
-
-		let embedIssue = new EmbedIssue(issueInfo);
-
-		console.log(embedIssue);
+		let hubUser;
+		let hubRepository;
+		let issueNumber;
 		
-		const embedMessage = new RichEmbed()
-		.setAuthor(embedIssue.author.name, embedIssue.author.imgUrl, embedIssue.author.url)
-		.setTitle(embedIssue.title)
-		.setURL(embedIssue.url)
-		.addField("Description", embedIssue.body)
-		.setFooter(embedIssue.state, embedIssue.stateIcon)
-		.setColor(embedIssue.stateColor)
-		.setTimestamp();
-
-		if (embedIssue.hasbodyImg) {
-			embedMessage.setImage(embedIssue.imgBody);
+		if (args.repository.match(/^https?:\/\/github\.com\/(.*)/)) {
+			let regResult = args.repository.match(/^https?:\/\/github\.com\/(.+)/)[1].split("/");
+			hubUser = regResult[0];
+			hubRepository = regResult[1];
+			if (args.number === "NOTHING_NUMBER") {
+				issueNumber = regResult[3];
+			} else {
+				issueNumber = args.number;
+			}
+		} else if (args.repository.match("/")) {
+			hubUser = args.repository.split("/")[0];
+			hubRepository = args.repository.split("/")[1];
+			issueNumber = args.number;
+		} else {
+			hubUser = "ISC-MakeIT";
+			hubRepository = args.repository;
+			issueNumber = args.number;
 		}
+		const issue = github.getIssues(hubUser, hubRepository);
+		await issue.getIssue(issueNumber)
+		.then((data) => {
+			issueInfo = data.data;
+			let embedIssue = new EmbedIssue(issueInfo);
 		
-		return msg.reply({embed:embedMessage})
+			const embedMessage = new RichEmbed()
+			.setAuthor(embedIssue.author.name, embedIssue.author.imgUrl, embedIssue.author.url)
+			.setTitle(embedIssue.title)
+			.setColor(embedIssue.stateColor)
+			.setURL(embedIssue.url)
+			.setDescription(embedIssue.body)
+			.setFooter(embedIssue.state, embedIssue.stateIcon)
+			.setTimestamp(embedIssue.createDate);
+	
+			if (embedIssue.hasbodyImg) {
+				embedMessage.setImage(embedIssue.imgBody);
+			}
+	
+			console.log(embedMessage);
+			
+			return msg.reply({embed:embedMessage})
+		})
+		.catch((err) => {
+			return msg.reply("Error: not found issue");
+		});
 	}
 };

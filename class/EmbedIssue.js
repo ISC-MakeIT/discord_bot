@@ -1,3 +1,4 @@
+const replaceInvalidBody = Symbol("replaceInvalidBody");
 const getStateIcon = Symbol("getStateIcon");
 const hasBodyImage = Symbol("hasBodyImage");
 const getBodyImageUrl = Symbol("getBodyImageUrl");
@@ -6,12 +7,13 @@ const setStatusColor = Symbol("setStatusColor");
 module.exports = class EmbedIssue {
 	constructor(issueInfo) {
 		this.title = issueInfo.title;
-		this.body = issueInfo.body;
+		this.body = this[replaceInvalidBody](issueInfo.body);
 		this.hasbodyImg = false;
 		this.url = issueInfo.html_url;
 		this.state = issueInfo.state;
 		this.stateIcon = this[getStateIcon](this.state);
 		this.stateColor = this[setStatusColor](this.state);
+		this.createDate = issueInfo.created_at;
 		this.author = {
 			name: issueInfo.user.login,
 			imgUrl: issueInfo.user.avatar_url,
@@ -23,6 +25,16 @@ module.exports = class EmbedIssue {
 		}
 	}
 
+	[replaceInvalidBody](body) {
+		if (body === "") {
+			return "No description provided.";
+		} else if (body.length >= 1024) {
+			return `${body.slice(0, 1021)}...`;
+		} else {
+			return body;
+		}
+	};
+	
 	[getStateIcon](state) {
 		if (state === "open") {
 			return "https://cdn.rawgit.com/wh1tecat-nya/BOT_Icon/e1a14d72/issue_opened.png";
